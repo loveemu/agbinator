@@ -118,7 +118,7 @@ def gax_scan(filename):
         for offset in range(0, len(rom), 4):
             version = parse_gax_version(rom, offset)
             if version:
-                gax = {"version": version, "music": {}}
+                gax = {"version": version, "music": {}, "function": {}}
                 break
 
         if not gax:
@@ -131,6 +131,38 @@ def gax_scan(filename):
             song_header = parse_gax_music_header_v3(rom, offset)
             if song_header:
                 gax["music"][to_address(offset)] = song_header
+
+        gax2_new_offset = rom.find(b'\xf0\xb5\x47\x46\x80\xb4\x81\xb0\x06\x1c\x00\x2e\x08\xd1\x02\x48\x02\x49')
+        if gax2_new_offset != -1:
+            gax["function"]["gax2_new"] = {"address": to_address(gax2_new_offset)}
+
+        gax2_init_offset = rom.find(b'\xf0\xb5\x57\x46\x4e\x46\x45\x46\xe0\xb4\x81\xb0\x07\x1c\x00\x26\x0e\x48\x39\x68\x01\x60\x79\x6b\x81\x46\x0d\x48\x84\x46\x00\x29')
+        if gax2_init_offset != -1:
+            gax["function"]["gax2_init"] = {"address": to_address(gax2_init_offset)}
+
+        gax2_jingle_offset = rom.find(b'\xf0\xb5\x47\x46\x80\xb4\x81\xb0\x80\x46\x0d\x48\x01\x68\x08\x1c\x80\x30\x8c\x6f\x04\x60\x04\x30\xcb\x6f\x03\x60\x4a\x68\xd1\x89')
+        if gax2_jingle_offset != -1:
+            gax["function"]["gax2_jingle"] = {"address": to_address(gax2_jingle_offset)}
+
+        gax_irq_offset = rom.find(b'\xf0\xb5\x3b\x48\x02\x68\x11\x68\x3a\x48\x81\x42\x6d\xd1\x50\x6d\x00\x28\x6a\xd0\x50\x6d\x01\x28\x1a\xd1\x02\x20\x50\x65\x36\x49')
+        if gax_irq_offset != -1:
+            gax["function"]["gax_irq"] = {"address": to_address(gax_irq_offset)}
+
+        gax_fx_offset = rom.find(b'\xf0\xb5\x07\x1c\x00\x25\x1c\x4c\xff\x2f\x39\xd8\x00\x22\x1b\x48\x01\x68\x0b\x69\x06\x1c\x9d\x42\x09\xd2\xc8\x68\x01\x6c\xa1\x42')
+        if gax_fx_offset != -1:
+            gax["function"]["gax_fx"] = {"address": to_address(gax_fx_offset)}
+
+        gax2_fx_offset = rom.find(b'\xf0\xb5\x04\x1c\x00\x2c\x09\xd1\x02\x48\x03\x49')
+        if gax2_fx_offset != -1:
+            gax["function"]["gax2_fx"] = {"address": to_address(gax2_fx_offset)}
+
+        gax_restore_fx_offset = rom.find(b'\x70\xb5\x05\x1c\x0e\x1c\x00\x2e\x03\xd1\x15\x48\x15\x49')
+        if gax_restore_fx_offset != -1:
+            gax["function"]["gax_restore_fx"] = {"address": to_address(gax_restore_fx_offset)}
+
+        gax2_new_fx_offset = rom.find(b'\x00\xb5\x01\x1c\x00\x29\x09\xd1\x02\x48\x03\x49')
+        if gax2_new_fx_offset != -1:
+            gax["function"]["gax2_new_fx"] = {"address": to_address(gax2_new_fx_offset)}
 
     return gax
 
@@ -146,6 +178,11 @@ def main():
         print("%d songs" % len(gax["music"]))
         for address, header in gax["music"].items():
             print("%08X %s" % (address, header["info"]))
+
+        if gax["function"]:
+            print()
+            for name, fn in gax["function"].items():
+                print("%-15s %08X" % (name, fn["address"]))
 
 
 main()
