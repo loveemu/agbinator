@@ -49,8 +49,11 @@ def parse_gax_version(rom, offset):
         if end_offset >= len(rom):
             return None
 
+    # example: GAX Sound Engine 3.03A-NJ (Mar  5 2003)
+    # from Crash Bandicoot - Purple Ripto's Rampage
+
     version = {"text": rom[offset + 17:end_offset].decode()}
-    m = re.fullmatch(r"(\d)\.(\d{1,3})([A-Za-z]?)", version["text"])
+    m = re.fullmatch(r"(\d)\.(\d{1,3})([A-Za-z\-]*)", version["text"])
     if m:
         version["major_version"] = int(m.group(1))
         version["minor_version"] = int(m.group(2))
@@ -124,7 +127,7 @@ def gax_scan(filename):
         if not gax:
             return None
 
-        if version["major_version"] != 3:
+        if "major_version" not in version or version["major_version"] != 3:
             return gax
 
         for offset in range(0, len(rom), 4):
