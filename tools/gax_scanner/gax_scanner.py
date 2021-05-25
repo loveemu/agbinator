@@ -25,6 +25,7 @@ def parse_song_info(rom, end_offset):
             break
         end_offset -= 1
 
+    # TODO: 0xa9 (copyright) is not the only character used in the metadata text
     start_offset = end_offset
     while 0x20 <= rom[start_offset - 1] <= 0x7e or rom[start_offset - 1] == 0xa9:
         start_offset -= 1
@@ -53,7 +54,7 @@ def parse_gax_version(rom, offset):
     # from Crash Bandicoot - Purple Ripto's Rampage
 
     version = {"text": rom[offset + 17:end_offset].decode()}
-    m = re.fullmatch(r"(\d)\.(\d{1,3})([A-Za-z\-]*)", version["text"])
+    m = re.fullmatch(r"v?(\d)\.(\d{1,3})([A-Za-z\-]*)", version["text"])
     if m:
         version["major_version"] = int(m.group(1))
         version["minor_version"] = int(m.group(2))
