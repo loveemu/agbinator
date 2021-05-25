@@ -140,11 +140,11 @@ def gax_scan(filename):
         if gax2_estimate_offset != -1:
             gax["function"]["gax2_estimate"] = {"address": to_address(gax2_estimate_offset)}
 
-        gax2_new_offset = rom.find(b'\xf0\xb5\x47\x46\x80\xb4\x81\xb0\x06\x1c\x00\x2e\x08\xd1\x02\x48\x02\x49')
+        gax2_new_offset = rom.find(b'\xf0\xb5\x47\x46\x80\xb4\x81\xb0\x06\x1c\x00\x2e')
         if gax2_new_offset != -1:
             gax["function"]["gax2_new"] = {"address": to_address(gax2_new_offset)}
 
-        gax2_init_offset = rom.find(b'\xf0\xb5\x57\x46\x4e\x46\x45\x46\xe0\xb4\x81\xb0\x07\x1c\x00\x26\x0e\x48\x39\x68\x01\x60')
+        gax2_init_offset = rom.find(b'\xf0\xb5\x57\x46\x4e\x46\x45\x46\xe0\xb4\x81\xb0\x07\x1c\x00')
         if gax2_init_offset != -1:
             gax["function"]["gax2_init"] = {"address": to_address(gax2_init_offset)}
 
@@ -153,6 +153,8 @@ def gax_scan(filename):
             gax["function"]["gax2_jingle"] = {"address": to_address(gax2_jingle_offset)}
 
         gax_irq_offset = rom.find(b'\xf0\xb5\x3b\x48\x02\x68\x11\x68\x3a\x48\x81\x42\x6d\xd1\x50\x6d\x00\x28\x6a\xd0\x50\x6d\x01\x28\x1a\xd1\x02\x20\x50\x65\x36\x49')
+        if gax_irq_offset == -1:
+            gax_irq_offset = rom.find(b'\xf0\xb5\x33\x48\x03\x68\x1a\x68\x32\x49\x07\x1c\x8a\x42\x5b\xd1\x58\x6d\x00\x28\x58\xd0\x58\x6d\x01\x28\x1a\xd1\x02\x20\x58\x65')
         if gax_irq_offset != -1:
             gax["function"]["gax_irq"] = {"address": to_address(gax_irq_offset)}
 
@@ -165,10 +167,14 @@ def gax_scan(filename):
             gax["function"]["gax_fx"] = {"address": to_address(gax_fx_offset)}
 
         gax2_fx_offset = rom.find(b'\xf0\xb5\x04\x1c\x00\x2c\x09\xd1\x02\x48\x03\x49')
+        if gax2_fx_offset == -1:
+            gax2_fx_offset = rom.find(b'\xf0\xb5\x01\x1c\x00\x29\x35\xd0\x0f\x88\x48\x88\x16\x4a\x01\x23\x5b\x42\x9c\x46\x90\x42\x00\xd0\x84\x46\x48\x68\x01\x25\x6d\x42')
         if gax2_fx_offset != -1:
             gax["function"]["gax2_fx"] = {"address": to_address(gax2_fx_offset)}
 
         gax2_new_fx_offset = rom.find(b'\x00\xb5\x01\x1c\x00\x29\x09\xd1\x02\x48\x03\x49')
+        if gax2_new_fx_offset == -1:
+            gax2_new_fx_offset = rom.find(b'\x01\x1c\x00\x29\x07\xd0\x04\x48\x08\x80\x01\x20\x40\x42\x48\x80\x48\x60\x88\x60\x88\x81\x70\x47\xff\xff\x00\x00')
         if gax2_new_fx_offset != -1:
             gax["function"]["gax2_new_fx"] = {"address": to_address(gax2_new_fx_offset)}
 
