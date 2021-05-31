@@ -3,6 +3,7 @@
 import argparse
 import glob
 import itertools
+import json
 import os
 import re
 
@@ -19,8 +20,45 @@ def to_offset(address):
     return address - 0x8000000
 
 
+def decode_country_code(code):
+    regions = {
+        "C": "CHN",  # China
+        "D": "DEU",  # German
+        "E": "USA",  # USA
+        "F": "FRA",  # ?
+        "H": "HOL",  # France
+        "I": "ITA",  # Italy
+        "J": "JPN",  # Japan
+        "K": "KOR",  # Korea
+        "P": "EUR",  # Europe
+        "Q": "DEN",  # ?
+        "S": "ESP",  # Spain
+        "U": "AUS",  # ?
+        "X": "EUU",  # ?
+        "Y": "EUU",  # ?
+        "Z": "EUU"  # ?
+    }
+    return regions.get(code, "XXX")
+
+
+def make_full_product_id(id):
+    return "AGB-{0:<4}-{1}".format(id.split("\0")[0], decode_country_code(id[3]))
+
+
 def agbinator_scan_mp2k(rom):
-    return None
+    # TODO: improve accuracy (scan for derived drivers)
+    m4a_song_num_start_offset = rom.find(
+        b"\x00\xb5\x00\x04\x07\x4a\x08\x49\x40\x0b\x40\x18\x83\x88\x59\x00\xc9\x18\x89\x00\x89\x18\x0a\x68\x01\x68\x10\x1c")
+    if m4a_song_num_start_offset == -1:
+        m4a_song_num_start_offset = rom.find(
+            b"\x00\xb5\x00\x04\x07\x4b\x08\x49\x40\x0b\x40\x18\x82\x88\x51\x00\x89\x18\x89\x00\xc9\x18\x0a\x68\x01\x68\x10\x1c")
+    if m4a_song_num_start_offset == -1:
+        return None
+
+    return {
+        "driver_name": "MusicPlayer2000",
+        "driver_version": ""
+    }
 
 
 def agbinator_scan_gax(rom):
@@ -30,17 +68,133 @@ def agbinator_scan_gax(rom):
         return None
 
     return {
-        "driver_name": "GAX",
+        "driver_name": "GAX Sound Engine",
         "driver_version": match_result.group().decode("iso-8859-1")
     }
 
 
 def agbinator_scan_musyx(rom):
-    return None
+    musyx = {"function": {}}
+    # TODO: MusyX - improve speed
+
+    snd_init_offset = rom.find(
+        b'\x70\xb5\x05\x1c\x0e\x1c\x30\x68\x03\x21\x08\x40\x00\x28\x00\xd0\xb4\xe0\x70\x68\x08\x40\x00\x28\x00\xd0\xaf\xe0\xb0\x68\x08\x40')
+    if snd_init_offset == -1:
+        snd_init_offset = rom.find(
+            b'\xf0\xb5\x47\x46\x80\xb4\x05\x1c\x0e\x1c\x90\x46\x1f\x1c\x00\x2a\x00\xd1\xc1\xe0\x00\x2f\x00\xd1\xbe\xe0\x30\x68\x03\x21\x08\x40')
+    if snd_init_offset != -1:
+        musyx["function"]["snd_Init"] = {"address": to_address(snd_init_offset)}
+
+    snd_handle_intermediate_offset = rom.find(
+        b'\x00\x20\x81\x46\x00\x24\x2a\x48\x03\x68\x4a\x46\x91\x00\x18\x1c\x18\x30\x42\x18\x11\x68\x40\x20\x08\x40\x00\x28\x19\xd0\x41\x20')
+    snd_handle_offset = snd_handle_intermediate_offset - 0x2c if snd_handle_intermediate_offset >= 0x2c else -1
+    if snd_handle_offset != -1:
+        musyx["function"]["snd_Handle"] = {"address": to_address(snd_handle_offset)}
+
+    snd_do_sample_offset = rom.find(
+        b'\xf0\xb5\x57\x46\x4e\x46\x45\x46\xe0\xb4\x85\xb0\x31\x4e\x35\x68\x28\x78\x00\x28\x00\xd1\xaa\xe0\x2f\x1c\xd0\x37\x38\x68\x00\x90')
+    if snd_do_sample_offset == -1:
+        snd_do_sample_offset = rom.find(
+            b'\xf0\xb5\x57\x46\x4e\x46\x45\x46\xe0\xb4\x85\xb0\x36\x4d\x2c\x68\x20\x7a\x00\x28\x00\xd1\xb4\xe0\x27\x1c\xd8\x37\x38\x68\x00\x90')
+    if snd_do_sample_offset != -1:
+        musyx["function"]["snd_DoSample"] = {"address": to_address(snd_do_sample_offset)}
+
+    snd_start_song_offset = rom.find(
+        b'\xf0\xb5\x57\x46\x4e\x46\x45\x46\xe0\xb4\x05\x1c\x39\x4a\x13\x68\x88\x21\x49\x00\x58\x18\x00\x68\x81\x69\x40\x18\x00\x68\xa8\x42')
+    if snd_start_song_offset == -1:
+        snd_start_song_offset = rom.find(
+            b'\xf0\xb5\x57\x46\x4e\x46\x45\x46\xe0\xb4\x04\x1c\x3a\x4a\x13\x68\x8c\x21\x49\x00\x58\x18\x00\x68\x81\x69\x40\x18\x00\x68\xa0\x42')
+    if snd_start_song_offset != -1:
+        musyx["function"]["snd_StartSong"] = {"address": to_address(snd_start_song_offset)}
+
+    snd_resume_song_offset = rom.find(
+        b'\x06\x48\x00\x68\x8c\x21\x49\x00\x40\x18\x00\x68\x39\x31\x42\x18\x11\x78\x01\x29\x04\xd0\x00\x20\x06\xe0\x00\x00')
+    if snd_resume_song_offset == -1:
+        snd_resume_song_offset = rom.find(
+            b'\x06\x48\x00\x68\x90\x21\x49\x00\x40\x18\x00\x68\x31\x31\x42\x18\x11\x78\x01\x29\x04\xd0\x00\x20\x06\xe0\x00\x00')
+    if snd_resume_song_offset != -1:
+        musyx["function"]["snd_ResumeSong"] = {"address": to_address(snd_resume_song_offset)}
+
+    snd_get_sample_working_set_size_offset = rom.find(
+        b'\xf0\xb5\x57\x46\x4e\x46\x45\x46\xe0\xb4\x82\xb0\x04\x1c\x0e\x1c\x00\x2e\x01\xd1\x00\x20\xdc\xe0\xa2\x78\x10\x01\x80\x18\x80\x00')
+    if snd_get_sample_working_set_size_offset != -1:
+        musyx["function"]["snd_GetSampleWorkingSetSize"] = {
+            "address": to_address(snd_get_sample_working_set_size_offset)}
+
+    return {
+        "driver_name": "MusyX Audio Tools",
+        "driver_version": ""
+    } if musyx["function"] else None
+
+
+def agbinator_scan_krawall(rom):
+    krawall_rcs_pattern = re.compile(b"\\$Id: Krawall.*?\x00")
+    match_result = krawall_rcs_pattern.search(rom)
+    if not match_result:
+        return None
+
+    return {
+        "driver_name": "Krawall",
+        "driver_version": match_result.group().split(b"\x00")[0].decode("iso-8859-1")
+    }
 
 
 def agbinator_scan_gbamodplay(rom):
-    return None
+    gbamod_signature_offset = rom.find(b'Logik State')
+    if gbamod_signature_offset == -1:
+        return None
+
+    return {
+        "driver_name": "GBAModPlay/LS_Play",
+        "driver_version": ""
+    }
+
+
+def agbinator_scan_quintet(rom):
+    offset = rom.find(b'\xf0\xb5\x4f\x46\x46\x46\xc0\xb4\x00\x20\x80\x46\x1e\x4e\x20\x21\x89\x19\x89\x46\x00\x27\x30\x1c\x1c\x30\x3d\x18\x29\x68\x01\x20')
+    if offset == -1:
+        return None
+
+    return {
+        "driver_name": "Quintet",
+        "driver_version": ""
+    }
+
+
+def agbinator_scan_gstyle(rom):
+    offset = rom.find(b'\x00\xb5\x01\x1c\x05\x48\x89\x00\x00\x68\x40\x18\x01\x68\x40\x18\x04\x30\x00\x21')
+    if offset == -1:
+        return None
+
+    return {
+        "driver_name": "G-Style",
+        "driver_version": ""
+    }
+
+
+def agbinator_scan_mobius(rom):
+    offset = rom.find(b'\x00\xb5\x05\x4b\x1b\x6c\x80\x00\xc0\x18\x42\x68\x9b\x18\x18\x1c')
+    if offset == -1:
+        return None
+
+    return {
+        "driver_name": "Mobius Entertainment",
+        "driver_version": ""
+    }
+
+
+def agbinator_scan_webfoot(rom):
+    offset = rom.find(b'\x70\xb5\x01\x25\x85\x70\x05\x70\x00\x22\x42\x70\xc1\x60\x04\x1c\x48\x7c\xe0\x70\xd0\x43\x20\x61\x00\x20\x43\x00\x1b\x18\x5b\x01')
+    if offset == -1:
+        offset = rom.find(
+            b'\x70\xb5\x10\x4c\x01\x26\xa6\x70\x05\x1c\x00\x20\xe6\x70\x60\x70\xe5\x60\x68\x7a\x20\x71\x70\x42\xe0\x80') # Legacy of Goku
+    if offset == -1:
+        return None
+
+    return {
+        "driver_name": "Webfoot Technologies",
+        "driver_version": ""
+    }
 
 
 def agbinator(filename):
@@ -48,9 +202,18 @@ def agbinator(filename):
     if size < 0xc0 or size > 0x2000000:
         raise ValueError("Input too small/large")
 
-    result = {"filename": os.path.basename(filename)}
     with open(filename, "rb") as f:
         rom = f.read()
+
+        internal_name = rom[0xa0:0xac].split(b'\x00', 1)[0].decode()
+        product_id = rom[0xac:0xb0].decode()
+        full_product_id = make_full_product_id(product_id)
+        result = {
+            "filename": os.path.basename(filename),
+            "internal_name": internal_name,
+            "product_id": product_id,
+            "full_product_id": full_product_id
+        }
 
         match_result = agbinator_scan_mp2k(rom)
         if match_result:
@@ -67,12 +230,37 @@ def agbinator(filename):
             result |= match_result
             return result
 
+        match_result = agbinator_scan_krawall(rom)
+        if match_result:
+            result |= match_result
+            return result
+
         match_result = agbinator_scan_gbamodplay(rom)
         if match_result:
             result |= match_result
             return result
 
-    return None
+        match_result = agbinator_scan_quintet(rom)
+        if match_result:
+            result |= match_result
+            return result
+
+        match_result = agbinator_scan_gstyle(rom)
+        if match_result:
+            result |= match_result
+            return result
+
+        match_result = agbinator_scan_mobius(rom)
+        if match_result:
+            result |= match_result
+            return result
+
+        match_result = agbinator_scan_webfoot(rom)
+        if match_result:
+            result |= match_result
+            return result
+
+        return result
 
 
 def main():
@@ -82,8 +270,12 @@ def main():
 
     for filename in itertools.chain.from_iterable(glob.iglob(pattern) for pattern in args.filenames):
         result = agbinator(filename)
-        if result:
-            print(result)
+        print("{0}\t{1}\t{2}\t{3}\t{4}"
+              .format(result.get("internal_name"),
+                      result.get("full_product_id"),
+                      result.get("driver_name", ""),
+                      result.get("driver_version", ""),
+                      result.get("filename")))
 
 
 main()
