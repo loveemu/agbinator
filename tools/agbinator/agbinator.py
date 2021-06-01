@@ -3,7 +3,6 @@
 import argparse
 import glob
 import itertools
-import json
 import os
 import re
 
@@ -41,8 +40,11 @@ def decode_country_code(code):
     return regions.get(code, "XXX")
 
 
-def make_full_product_id(id):
-    return "AGB-{0:<4}-{1}".format(id.split("\0")[0], decode_country_code(id[3]))
+def make_full_product_id(product_id):
+    if product_id[0] == "\0":
+        return ""
+    else:
+        return "AGB-{0:<4}-{1}".format(product_id.split("\0")[0], decode_country_code(product_id[3]))
 
 
 def agbinator_scan_mp2k(rom):
@@ -150,6 +152,34 @@ def agbinator_scan_gbamodplay(rom):
     }
 
 
+def agbinator_scan_konami(rom):
+    # TODO: add more Konami drivers
+    # Yu-Gi-Oh! Dungeon Dice Monsters, driver that uses MusicPlayer2000 etc.
+    offset = rom.find(b'\x50\x18\x01\x88\x80\x20\x80\x01\x08\x40\x00\x04\x05\x0c\x00\x2d')
+    if offset != -1 and offset >= 12:
+        return {
+            "driver_name": "Konami/GUN",
+            "driver_version": ""
+        }
+
+    return None
+
+
+def agbinator_scan_natsume(rom):
+    offset = rom.find(b'\x42\x18\x11\x88\x0a\x48\x81\x42\x01\xd8\x48\x1c\x10\x80\x18\x1c')
+    if offset == -1:
+        offset = rom.find(b'\x42\x18\x11\x88\x0b\x48\x81\x42\x01\xd8\x48\x1c\x10\x80\x18\x1c')
+        if offset == -1:
+            offset = rom.find(b'\x42\x18\x11\x88\x0c\x48\x81\x42\x01\xd8\x48\x1c\x10\x80\x18\x1c')
+    if offset == -1 or offset < 10:
+        return None
+
+    return {
+        "driver_name": "Natsume",
+        "driver_version": ""
+    }
+
+
 def agbinator_scan_quintet(rom):
     offset = rom.find(b'\xf0\xb5\x4f\x46\x46\x46\xc0\xb4\x00\x20\x80\x46\x1e\x4e\x20\x21\x89\x19\x89\x46\x00\x27\x30\x1c\x1c\x30\x3d\x18\x29\x68\x01\x20')
     if offset == -1:
@@ -197,6 +227,37 @@ def agbinator_scan_webfoot(rom):
     }
 
 
+def agbinator_scan_rare(rom):
+    offset = rom.find(b'\xf0\xb5\x43\x46\x4c\x46\x55\x46\x5e\x46\x67\x46\xf8\xb4\x84\x49\x08\x60\xf8\xbc\x98\x46\xa1\x46\xaa\x46\xb3\x46\xbc\x46\xf0\xbc')
+    if offset == -1:
+        return None
+
+    return {
+        "driver_name": "Rare",
+        "driver_version": ""
+    }
+
+
+def agbinator_scan_scm3lt(rom):
+    # Not very appropriate. The following scan detects patterns outside of the driver's code.
+    signature_pattern = re.compile(b"SCM3LT Ver.*?\x00")
+    match_result = signature_pattern.search(rom)
+    if match_result:
+        return {
+            "driver_name": "SCM3LT",
+            "driver_version": match_result.group().split(b"\x00")[0].decode("iso-8859-1")
+        }
+    else:
+        offset = rom.find(b'\x82\x72\x82\x62\x82\x6c\x82\x52\x82\x6b\x82\x73') # Shift_JIS full-width "SCM3LT"
+        if offset == -1:
+            return None
+
+    return {
+        "driver_name": "SCM3LT",
+        "driver_version": ""
+    }
+
+
 def agbinator(filename):
     size = os.path.getsize(filename)
     if size < 0xc0 or size > 0x2000000:
@@ -240,6 +301,16 @@ def agbinator(filename):
             result |= match_result
             return result
 
+        match_result = agbinator_scan_konami(rom)
+        if match_result:
+            result |= match_result
+            return result
+
+        match_result = agbinator_scan_natsume(rom)
+        if match_result:
+            result |= match_result
+            return result
+
         match_result = agbinator_scan_quintet(rom)
         if match_result:
             result |= match_result
@@ -256,6 +327,16 @@ def agbinator(filename):
             return result
 
         match_result = agbinator_scan_webfoot(rom)
+        if match_result:
+            result |= match_result
+            return result
+
+        match_result = agbinator_scan_rare(rom)
+        if match_result:
+            result |= match_result
+            return result
+
+        match_result = agbinator_scan_scm3lt(rom)
         if match_result:
             result |= match_result
             return result
