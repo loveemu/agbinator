@@ -292,6 +292,17 @@ def agbinator_scan_scm3lt(rom):
     }
 
 
+def agbinator_scan_torus(rom):
+    offset = rom.find(b'\x0b\x1c\x18\x78\xc1\x08\x24\xd3\x04\x22\x12\x06\xbc\x32\x98\x69\x40\x08')
+    if offset == -1:
+        return None
+
+    return {
+        "driver_name": "Torus Games",
+        "driver_version": ""
+    }
+
+
 def agbinator(filename):
     size = os.path.getsize(filename)
     if size < 0xc0 or size > 0x2000000:
@@ -371,6 +382,11 @@ def agbinator(filename):
             return result
 
         match_result = agbinator_scan_scm3lt(rom)
+        if match_result:
+            result |= match_result
+            return result
+
+        match_result = agbinator_scan_torus(rom)
         if match_result:
             result |= match_result
             return result
