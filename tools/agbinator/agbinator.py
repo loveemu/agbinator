@@ -194,8 +194,8 @@ def agbinator_scan_kcej(rom):
             "driver_version": "Modern" # Yu-Gi-Oh! World Championship Tournament 2004 etc.
         }
 
-    offset = rom.find(b'\x50\x18\x01\x88\x80\x20\x80\x01\x08\x40\x00\x28')
-    if offset != -1 and offset >= 8:
+    offset = rom.find(b'\xf0\x7b\x48\x43\x04\x13\x30\x88\x00\x19\x38\x80\x70\x88\x78\x80\xb0\x78\xf8\x80')
+    if offset != -1 and offset >= 0x498:
         return {
             "driver_name": "Konami(KCEJ)/GUN",
             "driver_version": "Classic" # Yu-Gi-Oh! Worldwide Edition: Stairway to the Destined Duel etc.
