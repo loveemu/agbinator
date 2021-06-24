@@ -191,21 +191,21 @@ def agbinator_scan_kcej(rom):
     if offset != -1 and offset >= 12:
         return {
             "driver_name": "Konami(KCEJ)/GUN",
-            "driver_version": "Modern"  # Yu-Gi-Oh! World Championship Tournament 2004 etc.
+            "driver_version": "Late"  # Yu-Gi-Oh! World Championship Tournament 2004 etc.
         }
 
     offset = rom.find(b'\xf0\x7b\x48\x43\x04\x13\x30\x88\x00\x19\x38\x80\x70\x88\x78\x80\xb0\x78\xf8\x80')
     if offset != -1 and offset >= 0x498:
         return {
             "driver_name": "Konami(KCEJ)/GUN",
-            "driver_version": "Classic"  # Yu-Gi-Oh! Worldwide Edition: Stairway to the Destined Duel etc.
+            "driver_version": "Middle"  # Yu-Gi-Oh! Worldwide Edition: Stairway to the Destined Duel etc.
         }
 
     offset = rom.find(b'\x08\x0d\x98\x80\x1d\x60\x60\x42\x30\x80\x80\x20\xc0\x01\x02\x40\x00\x2a')
     if offset != -1 and offset >= 0x64:
         return {
             "driver_name": "Konami(KCEJ)/GUN",
-            "driver_version": "Ancient"  # Get Backers - Jigoku no Scaramouche
+            "driver_version": "Early"  # Get Backers - Jigoku no Scaramouche
         }
 
     return None
