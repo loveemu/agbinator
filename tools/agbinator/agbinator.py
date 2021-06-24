@@ -186,14 +186,26 @@ def agbinator_scan_gbamodplay(rom):
     }
 
 
-def agbinator_scan_konami(rom):
-    # TODO: add more Konami drivers
-    # Yu-Gi-Oh! Dungeon Dice Monsters, driver that uses MusicPlayer2000 etc.
+def agbinator_scan_kcej(rom):
     offset = rom.find(b'\x50\x18\x01\x88\x80\x20\x80\x01\x08\x40\x00\x04\x05\x0c\x00\x2d')
     if offset != -1 and offset >= 12:
         return {
-            "driver_name": "Konami/GUN",
-            "driver_version": ""
+            "driver_name": "Konami(KCEJ)/GUN",
+            "driver_version": "Modern" # Yu-Gi-Oh! World Championship Tournament 2004 etc.
+        }
+
+    offset = rom.find(b'\x50\x18\x01\x88\x80\x20\x80\x01\x08\x40\x00\x28')
+    if offset != -1 and offset >= 8:
+        return {
+            "driver_name": "Konami(KCEJ)/GUN",
+            "driver_version": "Classic" # Yu-Gi-Oh! Worldwide Edition: Stairway to the Destined Duel etc.
+        }
+
+    offset = rom.find(b'\x08\x0d\x98\x80\x1d\x60\x60\x42\x30\x80\x80\x20\xc0\x01\x02\x40\x00\x2a')
+    if offset != -1 and offset >= 0x64:
+        return {
+            "driver_name": "Konami(KCEJ)/GUN",
+            "driver_version": "Ancient" # Get Backers - Jigoku no Scaramouche
         }
 
     return None
@@ -350,7 +362,7 @@ def agbinator(filename):
             result |= match_result
             return result
 
-        match_result = agbinator_scan_konami(rom)
+        match_result = agbinator_scan_kcej(rom)
         if match_result:
             result |= match_result
             return result
