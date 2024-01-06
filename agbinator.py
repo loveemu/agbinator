@@ -319,6 +319,18 @@ def agbinator_scan_torus(rom):
     }
 
 
+def agbinator_scan_brownie_brown(rom):
+    # Scan for SoundMain fragments written in ARM
+    offset = rom.find(b'\x02\x00\x51\xe1\x00\x10\xa0\x43\x02\x10\x41\x50\x00\x10\xc0\xe5\xa1\x22\xa0\xe1\x02\x32\xa0\xe1\x02\x20\x83\xe0')
+    if offset == -1:
+        return None
+
+    return {
+        "driver_name": "Brownie Brown",
+        "driver_version": ""
+    }
+
+
 def agbinator(filename):
     size = os.path.getsize(filename)
     if size < 0xc0 or size > 0x2000000:
@@ -403,6 +415,11 @@ def agbinator(filename):
             return result
 
         match_result = agbinator_scan_torus(rom)
+        if match_result:
+            result |= match_result
+            return result
+
+        match_result = agbinator_scan_brownie_brown(rom)
         if match_result:
             result |= match_result
             return result
