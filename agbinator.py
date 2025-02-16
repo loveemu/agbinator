@@ -318,7 +318,6 @@ def agbinator_scan_torus(rom):
         "driver_version": ""
     }
 
-
 def agbinator_scan_brownie_brown(rom):
     # Scan for SoundMain fragments written in ARM
     offset = rom.find(b'\x02\x00\x51\xe1\x00\x10\xa0\x43\x02\x10\x41\x50\x00\x10\xc0\xe5\xa1\x22\xa0\xe1\x02\x32\xa0\xe1\x02\x20\x83\xe0')
@@ -330,7 +329,120 @@ def agbinator_scan_brownie_brown(rom):
         "driver_version": ""
     }
 
+def agbinator_scan_alphadream(rom):
+    offset = rom.find(b'\x78\x01\x20\10\x43\x08\x70\x31\x68\xc9\x18\x??\x19\x0a\x78\xfd\x20\x10\x40\x08\x70\x0e\x48')
+    if offset == -1:
+        return None
 
+    return {
+        "driver_name": "AlphaDream",
+        "driver_version": ""
+    }
+    
+def agbinator_scan_quickthunder(rom):
+    offset = rom.find(b'\x80\x00\x37\x49\x09\x18\x37\x4a\x4c\x78\x01\x34\xd3\x7f\x9c\x42')
+    if offset == -1:
+        return None
+
+    return {
+        "driver_name": "QuickThunder",
+        "driver_version": ""
+    }
+
+def agbinator_scan_engine_software(rom):
+    offset = rom.find(b'\x1c\x35\x22\x35\x29\x35\x2f\x35\x35\x35\x3b\x35\x41\x35\x47\x35\x4d\x35\x54')
+    if offset == -1:
+        return None
+
+    return {
+        "driver_name": "Engine Software",
+        "driver_version": ""
+    }
+
+def agbinator_scan_gbass(rom):
+    offset = rom.find(b'\x04\xcc\x00\x00\x04\x0a\x4b\x0b\x49\x0b\x4c\x0c\x4d\x68\x78\x0c\x4b\x00\x28\x00\xd0')
+    if offset == -1:
+        return None
+
+    return {
+        "driver_name": "GBASS/Paragon 5",
+        "driver_version": ""
+    }
+
+def agbinator_scan_sonix(rom):
+    offset = rom.find(b'\x10\x21\x82\x78\x0a\x43\x82\x70\x??\xe7')
+    if offset == -1:
+        return None
+
+    return {
+        "driver_name": "Sonix Audio Tools",
+        "driver_version": ""
+    }
+
+def agbinator_scan_apex(rom):
+    offset = rom.find(b'\xb2\x42\x00\xdb\x1f\x22\x5d\x01\x4b\x19\x91\x02\x5d\x18\x??\x46\x15\x80\x02')
+    if offset == -1:
+        return None
+
+    offset_temp = rom.find(b'\xb2\x42\x09\xdA\x8b\x68\x44\x46\x1b\x1b\x1b\x12')
+    if offset_temp == -1:
+        return None
+
+    return {
+        "driver_name": "Apex",
+        "driver_version": ""
+    }
+
+def agbinator_scan_bit_managers(rom):
+    offset = rom.find(b'\xc9\x0e\x2b\x0f\x8d\x0f\xee\x0f\x4f\x10')
+    if offset == -1:
+        return None
+
+    return {
+        "driver_name": "Bit Managers",
+        "driver_version": ""
+    }
+
+def agbinator_scan_paul_tonge(rom):
+    offset = rom.find(b'\x09\x01\xc8\x18\x84\x46\x64\x46\x24\x34')
+    if offset == -1:
+        return None
+
+    return {
+        "driver_name": "Paul Tonge",
+        "driver_version": ""
+    }
+
+def agbinator_scan_mark_cooksey(rom):
+    offset = rom.find(b'\x9d\x07\x6b\xca\x23\x78\xc7\x12\x59\x9c\xdb\x17\x4f\x84\xb6\xe5\x12\x3c\x64')
+    if offset == -1:
+        return None
+
+    return {
+        "driver_name": "Mark Cooksey",
+        "driver_version": ""
+    }
+
+def agbinator_scan_ugba_player(rom):
+    offset = rom.find(b'\x30\x80\xbd\x18\x72\xfd\xff\xeb\x83\xfd\xff\xeb\x30\x40\xbd\xe8\xb2\xfc\xff\xea\x70\x40\x2d\xe9\c42\xf3\xff\xeb\x3d\xf8')
+    if offset == -1:
+        return None
+
+    return {
+        "driver_name": "UGBA Player",
+        "driver_version": ""
+    }
+
+def agbinator_scan_ubisoft_milan(rom):
+    offset = rom.find(b'\x02\xf0\xb5\x4f\x46\x46\x46\xc0\xb4\x83\xb0\x81\x46\x0e\x1c\x77\x1c\x71\x78\x78\x78\x00\x02\x01\x43')
+    if offset == -1:
+        return None
+
+    return {
+        "driver_name": "Ubisoft Milan",
+        "driver_version": ""
+    }
+    
 def agbinator(filename):
     size = os.path.getsize(filename)
     if size < 0xc0 or size > 0x2000000:
@@ -420,6 +532,61 @@ def agbinator(filename):
             return result
 
         match_result = agbinator_scan_brownie_brown(rom)
+        if match_result:
+            result |= match_result
+            return result
+
+        match_result = agbinator_scan_alphadream(rom)
+        if match_result:
+            result |= match_result
+            return result
+
+        match_result = agbinator_scan_quickthunder(rom)
+        if match_result:
+            result |= match_result
+            return result
+
+        match_result = agbinator_scan_engine_software(rom)
+        if match_result:
+            result |= match_result
+            return result
+
+        match_result = agbinator_scan_gbass(rom)
+        if match_result:
+            result |= match_result
+            return result
+
+        match_result = agbinator_scan_sonix(rom)
+        if match_result:
+            result |= match_result
+            return result
+
+        match_result = agbinator_scan_apex(rom)
+        if match_result:
+            result |= match_result
+            return result
+
+        match_result = agbinator_scan_bit_managers(rom)
+        if match_result:
+            result |= match_result
+            return result
+
+        match_result = agbinator_scan_paul_tonge(rom)
+        if match_result:
+            result |= match_result
+            return result
+
+        match_result = agbinator_scan_mark_cooksey(rom)
+        if match_result:
+            result |= match_result
+            return result
+
+        match_result = agbinator_scan_ugba_player(rom)
+        if match_result:
+            result |= match_result
+            return result
+
+        match_result = agbinator_scan_ubisoft_milan(rom)
         if match_result:
             result |= match_result
             return result
