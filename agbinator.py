@@ -423,15 +423,23 @@ def agbinator_scan_mark_cooksey(rom):
     
 
 def agbinator_scan_ugba_player(rom):
-    offset = rom.find(b'\x30\x80\xbd\x18\x72\xfd\xff\xeb\x83\xfd\xff\xeb\x30\x40\xbd\xe8\xb2\xfc\xff\xea\x70\x40\x2d\xe9\c42\xf3\xff\xeb\x3d\xf8')
-    if offset == -1:
-        return None
-
+    signature_pattern = re.compile(b"UGBA Player Copyright 2001 Thalamus Interactive Ltd.\x00")
+    match_result = signature_pattern.search(rom)
+    if match_result:
+        return {
+            "driver_name": "UGBA Player",
+            "driver_version": match_result.group().split(b"\x00")[0].decode("iso-8859-1")
+        }
+    else:
+        offset = rom.find(b'\x30\x80\xbd\x18\x72\xfd\xff\xeb\x83\xfd\xff\xeb\x30\x40\xbd\xe8\xb2\xfc\xff\xea\x70\x40\x2d\xe9\c42\xf3\xff\xeb\x3d\xf8')
+        if offset == -1:
+            return None
+        
     return {
         "driver_name": "UGBA Player",
         "driver_version": ""
     }
-    
+
 
 def agbinator_scan_ubisoft_milan(rom):
     offset = rom.find(b'\x02\xf0\xb5\x4f\x46\x46\x46\xc0\xb4\x83\xb0\x81\x46\x0e\x1c\x77\x1c\x71\x78\x78\x78\x00\x02\x01\x43')
