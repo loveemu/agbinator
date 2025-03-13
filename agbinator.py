@@ -166,13 +166,20 @@ def agbinator_scan_musyx(rom):
 def agbinator_scan_krawall(rom):
     krawall_rcs_pattern = re.compile(b"\\$Id: Krawall.*?\x00")
     match_result = krawall_rcs_pattern.search(rom)
-    if not match_result:
-        return None
+    if match_result:
+        return {
+            "driver_name": "Krawall",
+            "driver_version": match_result.group().split(b"\x00")[0].decode("iso-8859-1")
+        }
+        else:
+            offset = rom.find(b'\x73\x5c\xa7\xae\x73\xe3\x64\xc9\x73\x97\x28\xe4\x73')
+            if offset == -1:
+                return None
 
-    return {
-        "driver_name": "Krawall",
-        "driver_version": match_result.group().split(b"\x00")[0].decode("iso-8859-1")
-    }
+        return {
+            "driver_name": "Krawall",
+            "driver_version": ""
+         }
 
 
 def agbinator_scan_gbamodplay(rom):
