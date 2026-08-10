@@ -384,14 +384,14 @@ def agbinator_scan_sonix(rom):
 def agbinator_scan_apex(rom):
     offset = rom.find(b'\xb2\x42\x00\xdb\x1f\x22\x5d\x01\x4b\x19\x91\x02\x5d\x18\x??\x46\x15\x80\x02')
     if offset == -1:
-        return None
-
-    offset_temp = rom.find(b'\xb2\x42\x09\xdA\x8b\x68\x44\x46\x1b\x1b\x1b\x12')
-    if offset_temp == -1:
-        return None
+        offset_temp = rom.find(b'\x01\x33\xa0\xe3\xd4\x30\x83\xe2\x07\x00\x83\xe8\x1e\xff\x2f\xe1')
+        if offset_temp == -1:
+            offset_temp = rom.find(b'\xb2\x42\x09\xdA\x8b\x68\x44\x46\x1b\x1b\x1b\x12')
+            if offset_temp == -1 or offset < 10:
+            return None
 
     return {
-        "driver_name": "Apex",
+        "driver_name": "Apex/AAS",
         "driver_version": ""
     }
     
@@ -408,7 +408,7 @@ def agbinator_scan_bit_managers(rom):
     
 
 def agbinator_scan_paul_tonge(rom):
-    offset = rom.find(b'\x09\x01\xc8\x18\x84\x46\x64\x46\x24\x34')
+    offset = rom.find(b'\x04\x60\x56\xe2\x??\xff\xff\x1a\x2a\x28\x82\xe0\x??\x20\x83\xe5\x??\xa0\x83\xe5\x00\xa0\xa0\xe3\xba\xa1\xc3\xe1\x01\x00\xa0\xe3\xf0\x47\xbd\xe8\x0e\xf0\xa0\xe1')
     if offset == -1:
         return None
 
@@ -455,6 +455,92 @@ def agbinator_scan_ubisoft_milan(rom):
 
     return {
         "driver_name": "Ubisoft Milan",
+        "driver_version": ""
+    }
+
+
+def agbinator_scan_radriver(rom):
+    offset = rom.find(b'\xa1\xe8\x04\x30\x53\xe2\xfc\xff\xff\x1a\x??\x11\x9f\xe5\x??\x21\x9f\xe5\x02\x30\x51\xe0\x04\x00\x00\x0a\x??\x11\x9f\xe5\x01\x00\xb1\xe8\x01\x00\xa2\xe8\x04\x30\x53\xe2\xfb\xff\xff\x1a\x??\x11\x9f\xe5\x0f\xe0\xa0\xe1\x11\xff\x2f\xe1')
+    if offset == -1:
+        offset_temp = rom.find(b'\x5b\x52\x41\x44\x72\x69\x76\x65\x72\x5d')
+        if offset_temp == -1 or offset < 10:
+        return None
+
+    return {
+        "driver_name": "RADriver/Full Fat",
+        "driver_version": ""
+    }
+
+
+def agbinator_scan_software_creations(rom):
+    offset = rom.find(b'\x53\x51\x00\xcc\xcc\xcc\xcc')
+    if offset == -1:
+        return None
+
+    return {
+        "driver_name": "Software Creations",
+        "driver_version": ""
+    }
+
+def agbinator_scan_dice_canada(rom):
+    offset = rom.find(b'\x0c\x10\x1f\xe5\x01\x10\x81\xe2\x14\x10\x0f\xe5\x1f\x10\x11\xe2\x1e\xff\x2f\x11')
+    if offset == -1:
+        return None
+
+    return {
+        "driver_name": "DICE Canada",
+        "driver_version": ""
+    }
+
+def agbinator_scan_nmod(rom):
+    offset = rom.find(b'\x49\x42\x80\x27\x7b\x1a\x43\x43\x00\x2b\x??\xdb\x??\xe7')
+    if offset == -1:
+        return None
+
+    return {
+        "driver_name": "NMod",
+        "driver_version": ""
+    }
+
+def agbinator_scan_nintendo_rd2(rom):
+    offset = rom.find(b'\x08\x1c\x10\x28\x11\x??\x6a\x88\x9a\x18\x28\x79\x30\x1a\x00\x06\x01\x21\x61\x74\x80\x0d\x80\x18\x81\x78\x21\x74\x00\x88\x18\x18\x20\x60\x80\x88\x25\x??')
+    if offset == -1:
+        return None
+
+    return {
+        "driver_name": "Nintendo R&D2",
+        "driver_version": ""
+    }
+    
+def agbinator_scan_kcek(rom):
+    offset = rom.find(b'\x68\x69\x00\x28\x01\x??\x04\x4b\xc0\x18\x07\x14\xa8\x69\x00\x28\x17\x??\x01\x4c\x00\x19\x14\x??')
+    if offset == -1:
+        return None
+
+    return {
+        "driver_name": "KCE Kobe",
+        "driver_version": ""
+    }
+
+def agbinator_scan_majesco(rom):
+    offset = rom.find(b'\x38\x1c\xb8\x42\x??\xd0')
+    if offset == -1:
+        return None
+
+    return {
+        "driver_name": "Majesco",
+        "driver_version": ""
+    }
+    
+def agbinator_scan_fuh(rom):
+    offset = rom.find(b'\x00\x00\x53\xe3\x??\x30\x87\x15\x??\x50\x9f\xe5\x1e\xff\x2f\xe1')
+    if offset == -1:
+        offset_temp = rom.find(b'\x00\x00\x51\xe3\x??\x00\x00\x0a\x00\xb0\xa0\xe3\x01\xb0\xc2\xe4\x01\x10\x51\xe2\x??\xff\xff\xca\xff\xb0\xa0\xe3\x0e\xf0\xa0\xe1')
+        if offset_temp == -1 or offset < 10:
+        return None
+
+    return {
+        "driver_name": "FUH Sound System",
         "driver_version": ""
     }
 
@@ -598,6 +684,46 @@ def agbinator(filename):
             return result
 
         match_result = agbinator_scan_ubisoft_milan(rom)
+        if match_result:
+            result |= match_result
+            return result
+
+        match_result = agbinator_scan_radriver(rom)
+        if match_result:
+            result |= match_result
+            return result
+
+        match_result = agbinator_scan_software_creations(rom)
+        if match_result:
+            result |= match_result
+            return result
+
+        match_result = agbinator_scan_dice_canada(rom)
+        if match_result:
+            result |= match_result
+            return result
+
+        match_result = agbinator_scan_nmod(rom)
+        if match_result:
+            result |= match_result
+            return result
+
+        match_result = agbinator_scan_nintendo_rd2(rom)
+        if match_result:
+            result |= match_result
+            return result
+
+        match_result = agbinator_scan_kcek(rom)
+        if match_result:
+            result |= match_result
+            return result
+
+        match_result = agbinator_scan_majesco(rom)
+        if match_result:
+            result |= match_result
+            return result
+
+        match_result = agbinator_scan_fuh(rom)
         if match_result:
             result |= match_result
             return result
